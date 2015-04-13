@@ -21,17 +21,38 @@
 <html>
   <head>
     <meta charset='utf-8' />
+    <link rel="stylesheet" type="text/css" href="index.css" title="style" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
   </head>
   <body>
     <!--Add a button for the user to click to initiate auth sequence -->
     <button id="authorize-button" style="visibility: hidden">Authorize</button>
+    
+    <div id="content"></div>
+    <div id="map"></div>
+    <div id="content2"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script type="text/javascript">
       // Enter the API key from the Google Develoepr Console - to handle any unauthenticated
       // requests in the code.
       // The provided key works for this sample only when run from
       // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
       // To use in your own application, replace this API key with your own.
-      var apiKey = '';
+      var apiKey = 'AIzaSyAdhM2QshWmjlbVzX5RgMSDBGs1LUxUSEo';
 
       // Use a button to handle authentication the first time.
       function handleClientLoad() {
@@ -43,7 +64,7 @@
       function makeApiCall() {
         gapi.client.load('plus', 'v1', function() {
           var request = gapi.client.plus.people.get({
-            'userId': ''
+            'userId': '108086881826934773478'
             // For instance: 
             // 'userId': '+GregorioRobles'
           });
@@ -57,10 +78,58 @@
             document.getElementById('content').appendChild(heading);
           });
         });
+
+        var map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+
+        gapi.client.load('plus', 'v1', function() {
+          var request = gapi.client.plus.activities.list({
+            'userId': '108086881826934773478',
+            'collection': 'public'
+          });
+          request.execute(function(resp) {
+            var index;
+            var text = "<ul>";
+            for (index = 0; index < resp.items.length; index++) {
+                var loc = "Location not set.";
+                if (resp.items[index].location){
+                    var latitude = resp.items[index].location.position.latitude;
+                    var longitude = resp.items[index].location.position.longitude;
+                    loc = "{" + latitude.toString() + ", " + longitude.toString() + "} Activity " + index.toString() + " in map.";
+                    var marker = L.marker([latitude, longitude]).addTo(map);
+                    var name = "Activity " + index.toString();
+                    marker.bindPopup(name).openPopup();
+                }
+                var titulo = "This activity doesn't have title."
+                if(resp.items[index.toString()].title){
+                    titulo = resp.items[index].title
+                }
+                text += "<li><p>" + titulo + "</p><p>" +  loc  + "</p></li>";
+            }
+            text += "</ul>";
+            document.getElementById("content2").innerHTML = text;
+          });
+        });
+
+
+
+
+        
       }
     </script>
     <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
-    <div id="content"></div>
-    <p>Retrieves your profile name (and picture) using the Google Plus API.</p>
+
+
+
+
+
+
+
+
+
+
   </body>
 </html>
